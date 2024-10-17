@@ -1,20 +1,20 @@
 # Simple Phoenix deployment with Ansible
 
-By "simple" I mean:
+By "simple" I mean the following:
 
 - A single server
 - No containers
 - Mix releases built locally
 - Postgres on the same server
-- Some downtime is acceptable
+- Some downtime during deployment is acceptable
 
 ## Getting started
 
-Ensure that Ansible is installed on your system and set up SSH access to the target host.
+Make sure Ansible is installed and that you have SSH access to the target server.
 
 ### Add host
 
-Specify the target host for the deployment by updating the `hosts` file.
+Specify the target host by updating the `hosts` file.
 
 ```ini
 [hosts]
@@ -23,10 +23,9 @@ Specify the target host for the deployment by updating the `hosts` file.
 
 ### Update vars file
 
-Update the variables in `group_vars/hosts/vars` for your environment.
+Modify the `group_vars/hosts/vars` file to reflect your environment's specific details.
 
 ```yaml
-# Change me!
 user: david
 port: 4000
 project_name: my_app
@@ -35,15 +34,13 @@ project_name: my_app
 
 ### Create a vault
 
-Ansible Vault is used to encrypt sensitive data, including database credentials and secret keys.
-
-To create a new vault, run the following command:
+Ansible Vault is used to encrypt sensitive data, such as database credentials and secret keys. To create a new vault:
 
 ```bash
 ansible-vault create group_vars/hosts/vault
 ```
 
-To avoid typing the vault password every time you run a task, store the password in a file:
+To avoid entering the vault password for each task, store it in a file:
 
 ```bash
 echo 'my_vault_password' > .vault_pass
@@ -67,22 +64,28 @@ vault_secret_key_base: secret
 
 ### Create user
 
-The `01-create-user.yml` playbook should be run first and can only be run once. It creates a new user that you defined in `group_vars/hosts/vars`) and disables root access via SSH.
+Run the 01-create-user.yml playbook to create the user defined in group_vars/hosts/vars. This playbook also disables root access via SSH. It should only be executed once.
 
-## Setup server
+## Configure the server
+
+Once the user is created, configure the server by running:
 
 ```
 ansible-playbook 02-configure-server.yml
 ```
 
-This will install updates, configure [sensible server security](https://www.redhat.com/sysadmin/ansible-linux-server-security), setup Postgres and create the database with appropriate permissions, and install Caddy.
+This playbook performs the following actions:
 
-## Deploy your Phoenix application
+- Installs updates and applies [basic security configurations](https://www.redhat.com/sysadmin/ansible-linux-server-security)
+- Installs and configures Postgres, and sets up the necessary database and privileges
+- Sets up Caddy for handling requests
 
-Now that the server is configured, all that is left to do is deploy your app:
+## Deploy the application
+
+With the server configured, deploy the Phoenix application using:
 
 ```
 ansible-playbook 03-deploy-application.yml
 ```
 
-Ansible will build a Mix Release locally and move the tarball to the server. Any modifications to the Caddyfile or service unit file are also applied. Expect 5-10 seconds of downtime. During this time, Caddy will serve a simple HTML page.
+This process builds a Mix release locally, transfers the resulting tarball to the server, and applies any changes to the Caddyfile and service unit file. Expect around 5-10 seconds of downtime during deployment, during which Caddy will serve a basic HTML page.
