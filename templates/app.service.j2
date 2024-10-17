@@ -7,7 +7,7 @@ User={{ user }}
 WorkingDirectory={{ app_dir }}
 
 Environment="PHX_SERVER=true"
-Environment="SECRET_KEY_BASE={{ secret_key_base }}"
+Environment="SECRET_KEY_BASE={{ vault_secret_key_base }}"
 Environment="DATABASE_URL={{ database_url }}"
 Environment="PORT={{ port }}"
 Environment="PHX_HOST={{ project_url }}"

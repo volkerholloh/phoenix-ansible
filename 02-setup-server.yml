@@ -1,6 +1,0 @@
-- name: Setup server
-  hosts: all
-
-- import_playbook: update-server.yml
-- import_playbook: harden-server.yml
-- import_playbook: setup-postgres.yml

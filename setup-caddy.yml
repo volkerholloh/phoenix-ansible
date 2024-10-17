@@ -1,0 +1,22 @@
+- name: Setup Caddy
+  hosts: all
+  become: true
+  remote_user: "{{ user }}"
+
+  tasks:
+    - name: Add repo
+      community.general.copr:
+        name: '@caddy/caddy'
+        state: enabled
+
+    - name: Install Caddy
+      dnf:
+        update_cache: true
+        name: caddy
+        state: latest
+
+    - name: Start and enable Caddy
+      service:
+        name: caddy
+        state: started
+        enabled: true

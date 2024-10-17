@@ -1,28 +1,33 @@
-# Sensible Phoenix deployments using Ansible
+# Simple Phoenix deployment with Ansible
 
-This playbook configures a Fedora server with sensible defaults and easy deployment of your Phoenix app.
+By "simple" I mean:
 
-It does not use containers or provide zero downtime deployment (although downtime is kept to a minimum), and Postgres is located on the same server as the web app.
+- A single server
+- No containers
+- Mix releases built locally
+- Postgres on the same server
+- Some downtime is acceptable
 
 ## Getting started
 
-- Ensure that Ansible is installed on your system.
-- Set up SSH access to the target hosts.
+Ensure that Ansible is installed on your system and set up SSH access to the target host.
 
-### 1. Add host
+### Add host
 
-Specify the target host for the deployment by updating the `hosts` file:
+Specify the target host for the deployment by updating the `hosts` file.
 
 ```ini
 [hosts]
 123.123.123.123
 ```
 
-### 2. Set variables
+### Update vars file
 
-Update the variables in `group_vars/hosts/vars` to match your specific deployment needs.
+Update the variables in `group_vars/hosts/vars` for your environment.
 
-Ansible Vault is used to encrypt sensitive data, including database credentials and the Phoenix secret key.
+### Create a vault
+
+Ansible Vault is used to encrypt sensitive data, including database credentials and secret keys.
 
 To create a new vault, run the following command:
 
@@ -30,30 +35,46 @@ To create a new vault, run the following command:
 ansible-vault create group_vars/hosts/vault
 ```
 
-This will open an editor where you can add your secrets.
-
 To avoid typing the vault password every time you run a task, store the password in a file:
 
 ```bash
 echo 'my_vault_password' > .vault_pass
 ```
 
-This file is not tracked by version control. Double check `.gitignore` to be sure.
+This file is not tracked by version control.
 
-Add secrets to the vault:
+The vault can be edited by running:
 
 ```bash
 ansible-vault edit group_vars/hosts/vault
 ```
 
-The following variables are required:
+Your vault should contain the following secrets:
 
 ```yaml
-db_user: secret
-db_password: secret
-secret_key_base: secret
+vault_db_user: secret
+vault_db_password: secret
+vault_secret_key_base: secret
 ```
 
-### 3. Create user
+### Create user
 
-The `01-create-user.yml` playbook should be run first and can only be run once. It creates a new user (defined in `group_vars/hosts/vars`) and disables root access via SSH.
+The `01-create-user.yml` playbook should be run first and can only be run once. It creates a new user that you defined in `group_vars/hosts/vars`) and disables root access via SSH.
+
+## Setup server
+
+```
+ansible-playbook 02-configure-server.yml
+```
+
+This will install updates, configure [sensible server security](https://www.redhat.com/sysadmin/ansible-linux-server-security), setup Postgres and create the database with appropriate permissions, and install Caddy.
+
+## Deploy your Phoenix application
+
+Now that the server is configured, all that is left to do is deploy your app:
+
+```
+ansible-playbook 03-deploy-application.yml
+```
+
+Ansible will build a Mix Release locally and move the tarball to the server. Any modifications to the Caddyfile or service unit file are also applied. Expect 5-10 seconds of downtime. During this time, Caddy will serve a simple HTML page.
