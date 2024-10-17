@@ -25,6 +25,14 @@ Specify the target host for the deployment by updating the `hosts` file.
 
 Update the variables in `group_vars/hosts/vars` for your environment.
 
+```yaml
+# Change me!
+user: david
+port: 4000
+project_name: my_app
+# etc...
+```
+
 ### Create a vault
 
 Ansible Vault is used to encrypt sensitive data, including database credentials and secret keys.
