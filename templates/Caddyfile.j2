@@ -3,6 +3,9 @@
 
 	handle_errors {
 		file_server
+		# Enable gzip in your Phoenix project in endpoint.exs, 
+		# otherwise let Caddy handle compression
+		# encode zstd gzip
 		root * {{ maintenance_dir }}
 	}
 }
