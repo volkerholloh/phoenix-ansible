@@ -1,0 +1,18 @@
+user: david
+
+port: 4000
+
+project_pretty_name: My App
+project_name: my_app
+project_url: my-app.mccrea.link
+
+maintenance_dir: /opt/{{ project_name }}/maintenance
+app_dir: /opt/{{ project_name }}/app
+tarballs_dir: /opt/{{ project_name }}/tarballs
+repo_dir: /var/home/david/code/5_Playground/my_app
+
+db_name: prod
+db_user: "{{ vault_db_user }}"
+db_password: "{{ vault_db_password }}"
+
+database_url: ecto://{{ db_user }}:{{ db_password }}@localhost:5432/{{ db_name }}

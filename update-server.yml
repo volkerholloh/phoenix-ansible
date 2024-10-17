@@ -1,0 +1,10 @@
+- name: Update packages
+  hosts: all
+  become: true
+  remote_user: "{{ user }}"
+
+  tasks:
+    - name: Update all packages
+      ansible.builtin.dnf:
+        name: "*"
+        state: latest

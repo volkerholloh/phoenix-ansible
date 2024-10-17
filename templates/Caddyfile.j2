@@ -1,0 +1,8 @@
+{{ project_url }} {
+	reverse_proxy localhost:{{ port }}
+
+	handle_errors {
+		file_server
+		root * {{ maintenance_dir }}
+	}
+}

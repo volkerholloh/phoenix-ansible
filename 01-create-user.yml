@@ -1,0 +1,44 @@
+# This playbook is to be run only once and before other playbooks
+
+- name: Create a user with sudo privileges
+  hosts: all
+  become: true
+  remote_user: root
+
+  tasks:
+    - name: Check for 'wheel' group
+      group:
+        name=wheel
+        state=present
+
+    - name: Allow wheel group to have passwordless sudo
+      lineinfile:
+        dest: /etc/sudoers
+        state: present
+        regexp: '^%wheel'
+        line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+
+    - name: Create a user
+      user:
+        name: "{{ user }}"
+        groups: wheel
+        append: yes
+        state: present
+
+    - name: Set authorized key
+      authorized_key:
+        user: "{{ user }}"
+        state: present
+        key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+
+    - name: Disallow root SSH access
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: "^PermitRootLogin"
+        line: "PermitRootLogin no"
+        state: present
+
+    - name: Reboot the machine
+      remote_user: "{{ user }}"
+      become: true
+      reboot:

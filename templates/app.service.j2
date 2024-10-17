@@ -1,0 +1,23 @@
+[Unit]
+Description={{ project_pretty_name }}
+After=network.target
+
+[Service]
+User={{ user }}
+WorkingDirectory={{ app_dir }}
+
+Environment="PHX_SERVER=true"
+Environment="SECRET_KEY_BASE={{ secret_key_base }}"
+Environment="DATABASE_URL={{ database_url }}"
+Environment="PORT={{ port }}"
+Environment="PHX_HOST={{ project_url }}"
+
+ExecStart={{ app_dir }}/bin/{{ project_name }} start
+ExecStop={{ app_dir }}/bin/{{ project_name }} stop
+ExecReload={{ app_dir }}/bin/{{ project_name }} restart
+
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
