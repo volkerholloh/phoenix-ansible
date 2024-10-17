@@ -62,11 +62,17 @@ vault_db_password: secret
 vault_secret_key_base: secret
 ```
 
+## Playbooks
+
 ### Create user
 
-Run the 01-create-user.yml playbook to create the user defined in group_vars/hosts/vars. This playbook also disables root access via SSH. It should only be executed once.
+Creates the user defined in `group_vars/hosts/vars` and disables SSH root access. It can/should be executed once.
 
-## Configure the server
+```
+ansible-playbook 01-create-user.yml
+```
+
+### Configure server
 
 Once the user is created, configure the server by running:
 
@@ -80,7 +86,7 @@ This playbook performs the following actions:
 - Installs and configures Postgres, and sets up the necessary database and privileges
 - Sets up Caddy for handling requests
 
-## Deploy the application
+### Deploy application
 
 With the server configured, deploy the Phoenix application using:
 
@@ -88,4 +94,10 @@ With the server configured, deploy the Phoenix application using:
 ansible-playbook 03-deploy-application.yml
 ```
 
-This process builds a Mix release locally, transfers the resulting tarball to the server, and applies any changes to the Caddyfile and service unit file. Expect around 5-10 seconds of downtime during deployment, during which Caddy will serve a basic HTML page.
+This playbook builds a Mix release locally and transfers the resulting tarball to the server. It also applies any changes to the Caddyfile and service unit file. Note: Expect approximately 5-10 seconds of downtime during deployment. During this period, Caddy will serve a basic HTML maintenance page.
+
+---
+
+**Todo**
+
+- [ ] Rollback app version using tarballs on server
