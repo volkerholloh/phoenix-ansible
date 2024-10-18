@@ -3,6 +3,11 @@
   become: true
   remote_user: "{{ user }}"
 
+  vars:
+    caddy_config_path: "/etc/caddy/Caddyfile"
+    app_service_file: "/etc/systemd/system/{{ project_name }}.service"
+    app_tarball: "{{ tarballs_dir }}/{{ project_name }}-{{ vsn }}.tar.gz"
+
   tasks:
     - name: Check maintenance directory exists
       file:
@@ -17,48 +22,44 @@
     - name: Copy Caddyfile
       template:
         src: templates/Caddyfile.j2
-        dest: /etc/caddy/Caddyfile
-
-    - name: Reload Caddy
-      service:
-        name: caddy
-        state: reloaded
+        dest: "{{ caddy_config_path }}"
+      notify:
+        - Reload Caddy
 
     - name: Run mix release
       shell: |
         cd {{ repo_dir }} && \
         mix deps.get --only prod && \
-        MIX_ENV=prod mix compile && \
-        MIX_ENV=prod mix assets.deploy && \
-        MIX_ENV=prod mix release
+        MIX_ENV=prod mix do compile, assets.deploy, release
       become_user: "{{ user }}"
       delegate_to: localhost
 
     - name: Extract version number from mix.exs
-      shell:
-        cmd: "grep -Po '(?<=version: \")[^\"]+' {{ repo_dir }}/mix.exs"
+      command: "grep -Po '(?<=version: \")[^\"]+' {{ repo_dir }}/mix.exs"
       register: temp_var
       delegate_to: localhost
 
     - name: Assign vsn
       set_fact:
-         vsn: "{{ temp_var.stdout }}"
+        vsn: "{{ temp_var.stdout }}"
 
     - name: Copy systemd service file
       template:
         src: templates/app.service.j2
-        dest: /etc/systemd/system/{{ project_name }}.service
+        dest: "{{ app_service_file }}"
+      notify:
+        - Reload systemd daemon
 
     - name: Create tarballs directory
       file:
         path: "{{ tarballs_dir }}"
         state: directory
 
-    # The tarballs are stored on the server in case there is a need to rollback later
-    - name: Copy app to server
+    - name: Copy app tarball to server
       copy:
         src: "{{ repo_dir }}/_build/prod/{{ project_name }}-{{ vsn }}.tar.gz"
-        dest: "{{ tarballs_dir }}/{{ project_name }}-{{ vsn }}.tar.gz"
+        dest: "{{ app_tarball }}"
+      when: not ansible_check_mode
 
     # Downtime starts here!
     - name: Stop app service
@@ -78,16 +79,25 @@
 
     - name: Extract the release
       unarchive:
-        src: "{{ tarballs_dir }}/{{ project_name }}-{{ vsn }}.tar.gz"
+        src: "{{ app_tarball }}"
         dest: "{{ app_dir }}"
         remote_src: true
 
     - name: Start app service
       service:
         name: "{{ project_name }}"
-        daemon_reload: true # Important
+        daemon_reload: true
         state: started
 
     - name: Migrate database
       shell:
         cmd: "SECRET_KEY_BASE={{ vault_secret_key_base }} DATABASE_URL={{ database_url }} {{ app_dir }}/bin/migrate"
+
+  handlers:
+    - name: Reload Caddy
+      service:
+        name: caddy
+        state: reloaded
+
+    - name: Reload systemd daemon
+      command: systemctl daemon-reload
