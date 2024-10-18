@@ -12,9 +12,41 @@ By "simple" I mean the following:
 
 Make sure Ansible is installed and that you have SSH access to the target server.
 
+### Prepare your Phoenix project
+
+We want Mix to package the release as as tarball. Modidy `mix.exs`:
+
+```elixir
+  def project do
+    [
+      app: :my_app,
+      # ...
+      releases: [
+        my_app: [
+          steps: [:assemble, :tar]
+        ]
+      ],
+    ]
+  end
+```
+
+If you haven't already done so, generate Phoenix release files:
+
+```bash
+mix phx.gen.release
+```
+
+### Download Ansible requirements
+
+We need to pull in dependencies for installing Postgres and Tailscale:
+
+```bash
+ansible-galaxy install -r requirements.yml
+```
+
 ### Add host
 
-Specify the target host by updating the `hosts` file.
+Specify the target host by updating the `hosts` file:
 
 ```ini
 [hosts]
@@ -23,7 +55,7 @@ Specify the target host by updating the `hosts` file.
 
 ### Update vars file
 
-Modify the `group_vars/hosts/vars` file to reflect your environment's specific details.
+Modify the `group_vars/hosts/vars` file to reflect your environment's specific details:
 
 ```yaml
 user: david
@@ -68,7 +100,7 @@ vault_secret_key_base: secret
 
 Creates the user defined in `group_vars/hosts/vars` and disables SSH root access. It can/should be executed once.
 
-```
+```bash
 ansible-playbook 01-create-user.yml
 ```
 
@@ -76,7 +108,7 @@ ansible-playbook 01-create-user.yml
 
 Once the user is created, configure the server by running:
 
-```
+```bash
 ansible-playbook 02-configure-server.yml
 ```
 
@@ -90,7 +122,7 @@ This playbook performs the following actions:
 
 With the server configured, deploy the Phoenix application using:
 
-```
+```bash
 ansible-playbook 03-deploy-application.yml
 ```
 
@@ -101,3 +133,4 @@ This playbook builds a Mix release locally and transfers the resulting tarball t
 **Todo**
 
 - [ ] Rollback app version using tarballs on server
+- [ ] Install Tailscale to enable connecting livebook to the app in production
