@@ -92,6 +92,8 @@ Your vault should contain the following secrets:
 vault_db_user: secret
 vault_db_password: secret
 vault_secret_key_base: secret
+vault_release_cookie: secret
+vault_tailscale_authkey: secret
 ```
 
 ## Playbooks
@@ -128,9 +130,15 @@ ansible-playbook 03-deploy-application.yml
 
 This playbook builds a Mix release locally and transfers the resulting tarball to the server. It also applies any changes to the Caddyfile and service unit file. Note: Expect approximately 5-10 seconds of downtime during deployment. During this period, Caddy will serve a basic HTML maintenance page.
 
+## Connect with Livebook
+
+Start Livebook on your local machine. 
+
+Use "Attached Node" to connect to the Elixir node running on the server. The name of the server is the Tailscale hostname plus the tailnet name, e.g. `my_app@my-server.tail1234.ts.net`.
+
 ---
 
 **Todo**
 
 - [ ] Rollback app version using tarballs on server
-- [ ] Install Tailscale to enable connecting livebook to the app in production
+- [x] Install Tailscale to enable connecting livebook to the app in production

@@ -11,6 +11,9 @@ Environment="SECRET_KEY_BASE={{ vault_secret_key_base }}"
 Environment="DATABASE_URL={{ database_url }}"
 Environment="PORT={{ port }}"
 Environment="PHX_HOST={{ project_url }}"
+Environment="RELEASE_DISTRIBUTION=name"
+Environment="RELEASE_NODE={{ project_name }}@{{ tailscale_hostname }}.{{ tailscale_tailnet_name }}"
+Environment="RELEASE_COOKIE={{ vault_release_cookie }}"
 
 ExecStart={{ app_dir }}/bin/{{ project_name }} start
 ExecStop={{ app_dir }}/bin/{{ project_name }} stop

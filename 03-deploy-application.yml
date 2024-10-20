@@ -23,8 +23,11 @@
       template:
         src: templates/Caddyfile.j2
         dest: "{{ caddy_config_path }}"
-      notify:
-        - Reload Caddy
+
+    - name: Reload Caddy
+      service:
+        name: caddy
+        state: reloaded
 
     - name: Run mix release
       shell: |
@@ -47,8 +50,9 @@
       template:
         src: templates/app.service.j2
         dest: "{{ app_service_file }}"
-      notify:
-        - Reload systemd daemon
+
+    - name: Reload systemd daemon
+      command: systemctl daemon-reload
 
     - name: Create tarballs directory
       file:
@@ -89,15 +93,6 @@
         daemon_reload: true
         state: started
 
-    - name: Migrate database
+    - name: Perform database migrations
       shell:
         cmd: "SECRET_KEY_BASE={{ vault_secret_key_base }} DATABASE_URL={{ database_url }} {{ app_dir }}/bin/migrate"
-
-  handlers:
-    - name: Reload Caddy
-      service:
-        name: caddy
-        state: reloaded
-
-    - name: Reload systemd daemon
-      command: systemctl daemon-reload

@@ -1,0 +1,19 @@
+- name: Setup tailscale
+  hosts: all
+  become: true
+
+  roles:
+    - role: artis3n.tailscale
+      vars:
+        tailscale_authkey: "{{ vault_tailscale_authkey }}"
+        tailscale_args: "--hostname={{ tailscale_hostname }}"
+
+  tasks:
+    - name: Add tailscale0 interface to trusted zone
+      firewalld:
+        zone: trusted
+        interface: tailscale0
+        permanent: true
+        immediate: true
+        state: enabled
+
