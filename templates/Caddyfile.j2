@@ -1,11 +1,11 @@
 {{ project_url }} {
 	reverse_proxy localhost:{{ port }}
+	# Enable gzip in endpoint.exs or let Caddy handle compression
+	#encode gzip
 
 	handle_errors {
 		file_server
-		# Enable gzip in your Phoenix project in endpoint.exs, 
-		# otherwise let Caddy handle compression
-		# encode zstd gzip
+		#encode gzip
 		root * {{ maintenance_dir }}
 	}
 }
