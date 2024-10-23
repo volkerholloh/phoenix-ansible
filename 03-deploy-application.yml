@@ -8,10 +8,31 @@
     app_service_file: "/etc/systemd/system/{{ project_name }}.service"
     app_tarball: "{{ tarballs_dir }}/{{ project_name }}-{{ vsn }}.tar.gz"
 
+  pre_tasks:
+    - name: Extract version number from mix.exs
+      command: "grep -Po '(?<=version: \")[^\"]+' {{ repo_dir }}/mix.exs"
+      register: temp_var
+      delegate_to: localhost
+      changed_when: false
+
+    - name: Assign vsn
+      set_fact:
+        vsn: "{{ temp_var.stdout }}"
+
+    - name: Ensure Caddy is started
+      service:
+        name: caddy
+        state: started
+
   tasks:
-    - name: Check maintenance directory exists
+    - name: Create maintenance directory
       file:
         path: "{{ maintenance_dir }}"
+        state: directory
+
+    - name: Create tarballs directory
+      file:
+        path: "{{ tarballs_dir }}"
         state: directory
 
     - name: Copy index.html
@@ -23,11 +44,23 @@
       template:
         src: templates/Caddyfile.j2
         dest: "{{ caddy_config_path }}"
+      register: caddyfile
 
     - name: Reload Caddy
       service:
         name: caddy
         state: reloaded
+      when: caddyfile.changed
+
+    - name: Copy unit file
+      template:
+        src: templates/app.service.j2
+        dest: "{{ app_service_file }}"
+      register: unit_file
+
+    - name: Reload systemd daemon
+      command: systemctl daemon-reload
+      when: unit_file.changed
 
     - name: Run mix release
       shell: |
@@ -36,34 +69,19 @@
         MIX_ENV=prod mix do compile, assets.deploy, release
       become_user: "{{ user }}"
       delegate_to: localhost
-
-    - name: Extract version number from mix.exs
-      command: "grep -Po '(?<=version: \")[^\"]+' {{ repo_dir }}/mix.exs"
-      register: temp_var
-      delegate_to: localhost
-
-    - name: Assign vsn
-      set_fact:
-        vsn: "{{ temp_var.stdout }}"
-
-    - name: Copy systemd service file
-      template:
-        src: templates/app.service.j2
-        dest: "{{ app_service_file }}"
-
-    - name: Reload systemd daemon
-      command: systemctl daemon-reload
-
-    - name: Create tarballs directory
-      file:
-        path: "{{ tarballs_dir }}"
-        state: directory
+      args:
+        creates: "{{ repo_dir }}/_build/prod/{{ project_name }}-{{ vsn }}.tar.gz"
 
     - name: Copy app tarball to server
       copy:
         src: "{{ repo_dir }}/_build/prod/{{ project_name }}-{{ vsn }}.tar.gz"
         dest: "{{ app_tarball }}"
-      when: not ansible_check_mode
+
+    - name: Wait for port to close active connections
+      wait_for:
+        host: 0.0.0.0
+        port: "{{ port }}"
+        state: drained
 
     # Downtime starts here!
     - name: Stop app service
@@ -87,12 +105,13 @@
         dest: "{{ app_dir }}"
         remote_src: true
 
+    - name: Perform database migrations
+      shell:
+        cmd: "SECRET_KEY_BASE={{ vault_secret_key_base }} DATABASE_URL={{ database_url }} {{ app_dir }}/bin/migrate"
+
     - name: Start app service
       service:
         name: "{{ project_name }}"
         daemon_reload: true
         state: started
-
-    - name: Perform database migrations
-      shell:
-        cmd: "SECRET_KEY_BASE={{ vault_secret_key_base }} DATABASE_URL={{ database_url }} {{ app_dir }}/bin/migrate"
+    # Downtime ends here!
