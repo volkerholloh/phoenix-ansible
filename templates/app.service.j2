@@ -6,7 +6,7 @@ After=network.target
 User={{ user }}
 WorkingDirectory={{ app_dir }}
 
-EnvironmentFile={{ env_file }}
+EnvironmentFile={{ app_dir }}/.env
 ExecStart={{ app_dir }}/bin/{{ project_name }} start
 ExecStop={{ app_dir }}/bin/{{ project_name }} stop
 ExecReload={{ app_dir }}/bin/{{ project_name }} restart

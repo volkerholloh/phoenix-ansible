@@ -6,18 +6,57 @@
   vars:
     caddy_config_path: "/etc/caddy/Caddyfile"
     app_service_file: "/etc/systemd/system/{{ project_name }}.service"
-    app_tarball: "{{ tarballs_dir }}/{{ project_name }}-{{ vsn }}.tar.gz"
+    app_tarball: "{{ tarballs_dir }}/{{ project_name }}-{{ vsn_next }}.tar.gz"
 
   pre_tasks:
-    - name: Extract version number from mix.exs
-      command: "grep -Po '(?<=version: \")[^\"]+' {{ repo_dir }}/mix.exs"
-      register: temp_var
+    - name: Check out main branch
+      command:
+        cmd: "git checkout main"
+        chdir: "{{ repo_dir }}"
+      delegate_to: localhost
+      register: checkout_output
+      changed_when: checkout_output.rc != 0
+
+    - name: Check for uncommitted changes in git repo
+      command:
+        cmd: "git --git-dir={{ repo_dir }}/.git --work-tree={{ repo_dir }} status --porcelain"
+        chdir: "{{ repo_dir }}"
+      delegate_to: localhost
+      register: git_status_output
+      changed_when: false
+
+    - name: Fail if there are uncommitted changes
+      fail:
+        msg: "There are uncommitted changes in the repository. Please commit them before proceeding."
+      when: git_status_output.stdout != ""
+
+    - name: Get next app version number
+      shell:
+        cmd: "grep -Po '(?<=version: \")[^\"]+' {{ repo_dir }}/mix.exs"
+      register: vsn_next
       delegate_to: localhost
       changed_when: false
 
-    - name: Assign vsn
-      set_fact:
-        vsn: "{{ temp_var.stdout }}"
+    - set_fact:
+        vsn_next: "{{ vsn_next.stdout }}"
+
+    - name: Get live app version number
+      shell: |
+        if [ -f '{{ app_dir }}/releases/start_erl.data' ]; then
+          cut -d' ' -f2 '{{ app_dir }}/releases/start_erl.data'
+        else
+          echo ""
+        fi
+      register: vsn_live
+      changed_when: false
+
+    - set_fact:
+        vsn_live: "{{ vsn_live.stdout }}"
+
+    - name: Fail if the versions match
+      fail:
+        msg: "The live version ({{ vsn_live }}) matches the next version ({{ vsn_next }}). Deployment should not proceed."
+      when: vsn_next == vsn_live
 
     - name: Ensure Caddy is started
       service:
@@ -70,12 +109,28 @@
       become_user: "{{ user }}"
       delegate_to: localhost
       args:
-        creates: "{{ repo_dir }}/_build/prod/{{ project_name }}-{{ vsn }}.tar.gz"
+        creates: "{{ repo_dir }}/_build/prod/{{ project_name }}-{{ vsn_next }}.tar.gz"
 
     - name: Copy app tarball to server
       copy:
-        src: "{{ repo_dir }}/_build/prod/{{ project_name }}-{{ vsn }}.tar.gz"
+        src: "{{ repo_dir }}/_build/prod/{{ project_name }}-{{ vsn_next }}.tar.gz"
         dest: "{{ app_tarball }}"
+
+    - name: Create temporary app directory
+      file:
+        path: "{{ app_dir_tmp }}"
+        state: directory
+
+    - name: Extract the release to temporary app directory
+      unarchive:
+        src: "{{ app_tarball }}"
+        dest: "{{ app_dir_tmp }}"
+        remote_src: true
+
+    - name: Copy env file
+      template:
+        src: templates/.env.j2
+        dest: "{{ app_dir_tmp }}/.env"
 
     - name: Wait for port to close active connections
       wait_for:
@@ -95,28 +150,25 @@
         state: absent
 
     - name: Create app directory
-      file:
-        path: "{{ app_dir }}"
-        state: directory
-
-    - name: Extract the release
-      unarchive:
-        src: "{{ app_tarball }}"
-        dest: "{{ app_dir }}"
-        remote_src: true
-
-    - name: Copy env file
-      template:
-        src: templates/.env.j2
-        dest: "{{ env_file }}"
+      command:
+        cmd: mv {{ app_dir_tmp }} {{ app_dir }}
+      args:
+        creates: "{{ app_dir }}"
 
     - name: Perform database migrations
       shell:
-        cmd: "env $(grep -v '^#' {{ env_file }} | xargs) {{ app_dir }}/bin/migrate"
+        cmd: "env $(grep -v '^#' {{ app_dir }}/.env | xargs) {{ app_dir }}/bin/migrate"
+      register: migration_result
+      changed_when: "'[info] Migrations already up' not in migration_result.stdout"
 
     - name: Start app service
       service:
         name: "{{ project_name }}"
         daemon_reload: true
         state: started
-    # Downtime ends here!
+
+    - name: Check app is running
+      wait_for:
+        port: "{{ port }}"
+        delay: 5
+        timeout: 15
