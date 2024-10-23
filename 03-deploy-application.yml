@@ -105,9 +105,14 @@
         dest: "{{ app_dir }}"
         remote_src: true
 
+    - name: Copy env file
+      template:
+        src: templates/.env.j2
+        dest: "{{ env_file }}"
+
     - name: Perform database migrations
       shell:
-        cmd: "SECRET_KEY_BASE={{ vault_secret_key_base }} DATABASE_URL={{ database_url }} {{ app_dir }}/bin/migrate"
+        cmd: "env $(grep -v '^#' {{ env_file }} | xargs) {{ app_dir }}/bin/migrate"
 
     - name: Start app service
       service:

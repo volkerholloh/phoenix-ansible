@@ -15,4 +15,5 @@ app_dir: /opt/{{ project_name }}/app
 tarballs_dir: /opt/{{ project_name }}/tarballs
 db_user: "{{ vault_db_user }}"
 db_password: "{{ vault_db_password }}"
+env_file: "{{ app_dir }}/env"
 database_url: ecto://{{ db_user }}:{{ db_password }}@localhost:5432/{{ db_name }}
