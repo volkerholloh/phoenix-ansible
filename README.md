@@ -36,9 +36,9 @@ If you haven't already done so, generate Phoenix release files:
 mix phx.gen.release
 ```
 
-### Download Ansible requirements
+### Install requirements
 
-We need to pull in dependencies for installing Postgres and Tailscale:
+Install requirements needed for running the playbooks:
 
 ```bash
 ansible-galaxy install -r requirements.yml
