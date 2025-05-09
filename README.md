@@ -1,5 +1,8 @@
 # Simple Phoenix deployment with Ansible
 
+> [!NOTE]
+> Intended for use on Fedora. Tested on version 40.
+
 By "simple" I mean the following:
 
 - A single server
@@ -116,9 +119,9 @@ ansible-playbook 02-configure-server.yml
 
 This playbook performs the following actions:
 
-- Installs updates and applies [basic security configurations](https://www.redhat.com/sysadmin/ansible-linux-server-security)
-- Installs and configures Postgres, and sets up the necessary database and privileges
-- Sets up Caddy for handling requests
+- Install updates and apply basic security configurations
+- Install and configures Postgres, and sets up the necessary database and privileges
+- Setup Caddy, my chosen reverse proxy
 
 ### Deploy application
 
@@ -132,7 +135,7 @@ This playbook builds a Mix release locally and transfers the resulting tarball t
 
 ## Connect with Livebook
 
-Start Livebook on your local machine. 
+Start Livebook on your local machine.
 
 Use "Attached Node" to connect to the Elixir node running on the server. The name of the server is the Tailscale hostname plus the tailnet name, e.g. `my_app@my-server.tail1234.ts.net`.
 
