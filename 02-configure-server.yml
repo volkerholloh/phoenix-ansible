@@ -1,5 +1,6 @@
 - name: Configure server
   hosts: all
+  remote_user: "{{ user }}"
 
 - import_playbook: update-packages.yml
 - import_playbook: harden-server.yml
