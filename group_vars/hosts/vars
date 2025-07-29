@@ -1,12 +1,12 @@
 # Change me!
-user: david
+user: ansible
 port: 4000
-project_name: fancy_app # Should match Phoenix project name
-project_pretty_name: Fancy App
-project_url: fancy-app.mccrea.link
-tailscale_hostname: fancy-server
-tailscale_tailnet_name: tailfab2f.ts.net # https://login.tailscale.com/admin/dns
-repo_dir: "/var/home/david/code/5_Playground/{{ project_name }}"
+project_name: petal_pro # Should match Phoenix project name
+project_pretty_name: Petal Pro
+project_url: example.com
+# tailscale_hostname: fancy-server
+# tailscale_tailnet_name: tailfab2f.ts.net # https://login.tailscale.com/admin/dns
+repo_dir: "/var/home/ansible/code/{{ project_name }}"
 db_name: prod
 
 # Leave me alone!
