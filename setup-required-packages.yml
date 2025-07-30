@@ -1,0 +1,13 @@
+- name: Setup requiered packages
+  hosts: production
+  become: true
+  remote_user: "{{ user }}"
+
+  tasks:
+    - name: Install packages
+      apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: true
+      with_items:
+        - zip
