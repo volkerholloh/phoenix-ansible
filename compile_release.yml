@@ -1,0 +1,33 @@
+- name: Ensure directory exists
+  hosts: production
+  become: true
+  remote_user: "{{ user }}"
+  tasks:
+    - name: Create directory if it not exists
+      ansible.builtin.file:
+        path: "{{ project_path }}"
+        state: directory
+        owner: "{{ user }}"
+        mode: "0755"
+
+- name: Load SSH key locally
+  hosts: localhost
+  tasks:
+    - name: Load SSH key
+      ansible.builtin.shell: ssh-add ~/.ssh/id_rsa
+      delegate_to: localhost
+
+- name: Clone project on production
+  hosts: production
+  # become: true
+  remote_user: "{{ user }}"
+  tasks:
+    - name: Clone project repository
+      ansible.builtin.git:
+        repo: "{{ repo }}"
+        version: "{{ git_ref }}"
+        dest: "{{ project_path }}"
+        accept_hostkey: true
+        force: true
+      environment:
+        GIT_TERMINAL_PROMPT: "0"
