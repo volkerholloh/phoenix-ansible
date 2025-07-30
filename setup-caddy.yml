@@ -10,10 +10,10 @@
         state: enabled
 
     - name: Install Caddy
-      dnf:
-        update_cache: true
+      apt:
+        update_cache: yes
         name: caddy
-        state: latest
+        state: present
 
     - name: Start and enable Caddy
       service:

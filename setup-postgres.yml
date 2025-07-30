@@ -5,12 +5,12 @@
 
   pre_tasks:
     - name: Install packages
-      dnf:
+      apt:
         name: "{{ item }}"
         state: present
         update_cache: true
       with_items:
-        - postgresql-server
+        - postgresql
         - postgresql-contrib
         - python3-psycopg2
         - acl
@@ -21,9 +21,9 @@
         path: "/var/lib/pgsql/data/pg_hba.conf"
       register: postgres_data
 
-    - name: "Initialize PostgreSQL"
-      shell: "postgresql-setup initdb"
-      when: not postgres_data.stat.exists
+    # - name: "Initialize PostgreSQL"
+    #   shell: "postgresql-setup initdb"
+    #   when: not postgres_data.stat.exists
  
     - name: "Start and enable services"
       service: 

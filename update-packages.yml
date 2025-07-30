@@ -5,6 +5,7 @@
 
   tasks:
     - name: Update all packages
-      dnf:
-        name: "*"
-        state: latest
+      apt:
+        upgrade: "yes"
+        update_cache: "yes"
+        autoremove: "yes"

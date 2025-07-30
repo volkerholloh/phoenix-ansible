@@ -107,7 +107,7 @@
       notify: Reload SSH
 
     - name: Install Fail2Ban
-      dnf:
+      apt:
         name: fail2ban
         state: present
 
@@ -118,7 +118,7 @@
         enabled: true
 
     - name: Install firewalld
-      dnf:
+      apt:
         name: firewalld
         state: present
 
