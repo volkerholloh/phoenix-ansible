@@ -24,9 +24,9 @@
     # - name: "Initialize PostgreSQL"
     #   shell: "postgresql-setup initdb"
     #   when: not postgres_data.stat.exists
- 
+
     - name: "Start and enable services"
-      service: 
+      service:
         name: "{{ item }}"
         state: started
         enabled: true
@@ -72,7 +72,7 @@
 
     - name: "Allow md5 connection for the db user"
       postgresql_pg_hba:
-        dest: "~/data/pg_hba.conf"
+        dest: /etc/postgresql/16/main/pg_hba.conf
         contype: host
         databases: all
         method: md5
@@ -81,7 +81,7 @@
       become: true
       become_user: postgres
       notify: Restart postgresql
- 
+
   handlers:
     - name: Restart postgresql
       systemd:
