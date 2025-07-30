@@ -32,7 +32,7 @@
 
     - name: Get next app version number
       shell:
-        cmd: "grep -Po '(?<=version: \")[^\"]+' {{ repo_dir }}/mix.exs"
+        cmd: 'grep -Po ''(?<=version: ")[^"]+'' {{ repo_dir }}/mix.exs'
       register: vsn_next
       delegate_to: localhost
       changed_when: false

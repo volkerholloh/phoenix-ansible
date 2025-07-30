@@ -101,7 +101,7 @@
       lineinfile:
         path: /etc/ssh/sshd_config
         regexp: '^#?\s*PasswordAuthentication\s'
-        line: 'PasswordAuthentication no'
+        line: "PasswordAuthentication no"
         state: present
         backup: yes
       notify: Reload SSH

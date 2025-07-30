@@ -7,16 +7,15 @@
 
   tasks:
     - name: Check for 'wheel' group
-      group:
-        name=wheel
+      group: name=wheel
         state=present
 
     - name: Allow wheel group to have passwordless sudo
       lineinfile:
         dest: /etc/sudoers
         state: present
-        regexp: '^%wheel'
-        line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+        regexp: "^%wheel"
+        line: "%wheel ALL=(ALL) NOPASSWD: ALL"
 
     - name: Create a user
       user:
