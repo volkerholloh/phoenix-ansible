@@ -1,5 +1,5 @@
 - name: Setup Caddy
-  hosts: all
+  hosts: production
   become: true
   remote_user: "{{ user }}"
 

@@ -1,7 +1,7 @@
 # This playbook is to be run only once and before other playbooks
 
 - name: Create a user with sudo privileges
-  hosts: all
+  hosts: production
   become: true
   remote_user: root
 

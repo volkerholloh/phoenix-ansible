@@ -1,6 +1,7 @@
 - name: Setup tailscale
-  hosts: all
+  hosts: production
   become: true
+  remote_user: "{{ user }}"
 
   roles:
     - role: artis3n.tailscale

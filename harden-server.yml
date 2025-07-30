@@ -1,7 +1,7 @@
 # https://www.redhat.com/sysadmin/ansible-linux-server-security
 
 - name: Harden server
-  hosts: all
+  hosts: production
   become: true
   remote_user: "{{ user }}"
 
