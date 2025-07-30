@@ -4,10 +4,33 @@
   remote_user: "{{ user }}"
 
   tasks:
-    - name: Add repo
-      community.general.copr:
-        name: '@caddy/caddy'
-        state: enabled
+    - name: Install required packages
+      apt:
+        update_cache: yes
+        name:
+          - debian-keyring
+          - debian-archive-keyring
+          - apt-transport-https
+        state: present
+
+    - name: Add Cloudsmith repository
+      apt_key:
+        url: "https://dl.cloudsmith.io/public/caddy/stable/gpg.key"
+        state: present
+
+    - name: Add Caddy repository to sources list
+      apt_repository:
+        repo: "deb https://dl.cloudsmith.io/public/caddy/stable/deb/debian
+          any-version main"
+        state: present
+        filename: caddy-stable
+
+    - name: Add Caddy src repository to sources list
+      apt_repository:
+        repo: "deb-src https://dl.cloudsmith.io/public/caddy/stable/deb/debian
+          any-version main"
+        state: present
+        filename: caddy-stable
 
     - name: Install Caddy
       apt:
@@ -15,8 +38,8 @@
         name: caddy
         state: present
 
-    - name: Start and enable Caddy
+    - name: Enable and start Caddy service
       service:
         name: caddy
+        enabled: yes
         state: started
-        enabled: true
