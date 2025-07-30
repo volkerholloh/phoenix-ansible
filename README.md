@@ -145,3 +145,12 @@ Use "Attached Node" to connect to the Elixir node running on the server. The nam
 
 - [ ] Rollback app version using tarballs on server
 - [x] Install Tailscale to enable connecting livebook to the app in production
+
+### my config
+
+Ubuntu 24.04 Noble Numbat
+
+Erlang 26.2.5.1
+Elixir 1.13.1-otp-24
+
+<https://binaries2.erlang-solutions.com/ubuntu/pool/contrib/e/esl-erlang/esl-erlang_27.3.4-1~ubuntu~noble_amd64.deb>

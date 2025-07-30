@@ -1,0 +1,39 @@
+- name: Setup Postgres
+  hosts: production
+  become: true
+  remote_user: "{{ user }}"
+
+  tasks:
+    - name: Install Erlang from remote .deb
+      apt:
+        state: present
+        deb: "{{ erlang_binary_url }}"
+
+    - name: Download Elixir release
+      get_url:
+        url: "{{ elixir_release_url }}"
+        dest: /tmp/elixir.zip
+
+    - name: create destination directory if it does not exist
+      ansible.builtin.file:
+        path: "{{ elixir_install_dir }}"
+        state: directory
+        mode: "0755"
+        owner: "{{ user }}"
+
+    - name: Unpack Elixir
+      unarchive:
+        src: /tmp/elixir.zip
+        dest: "{{ elixir_install_dir }}"
+        remote_src: yes
+
+    - name: Symlink elixir binaries
+      file:
+        src: "{{ elixir_install_dir }}/bin/{{ item }}"
+        dest: "/usr/local/bin/{{ item }}"
+        state: link
+      loop:
+        - elixir
+        - mix
+        - iex
+        - elixirc
