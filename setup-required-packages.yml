@@ -11,3 +11,4 @@
         update_cache: true
       with_items:
         - zip
+        - build-essential

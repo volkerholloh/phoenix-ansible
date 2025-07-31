@@ -9,6 +9,12 @@
         state: present
         deb: "{{ erlang_binary_url }}"
 
+    # - name: Install specific Erlang version
+    #   apt:
+    #     name: "esl-erlang=1:26.2.3"
+    #     state: present
+    #   become: yes
+
     - name: Download Elixir release
       get_url:
         url: "{{ elixir_release_url }}"

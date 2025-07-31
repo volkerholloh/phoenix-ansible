@@ -3,7 +3,8 @@ Description={{ project_pretty_name }}
 After=network.target
 
 [Service]
-User={{ user }}
+{# User={{ user }} #}
+User=root
 WorkingDirectory={{ app_dir }}
 
 EnvironmentFile={{ app_dir }}/.env

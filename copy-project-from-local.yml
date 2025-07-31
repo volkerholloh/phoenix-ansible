@@ -1,0 +1,38 @@
+- name: Zip, transfer, and unzip a folder
+  hosts: production
+  remote_user: "{{ user }}"
+  become: true
+  vars:
+    archive_name: "my_app.zip"
+    remote_path: "{{ repo_dir }}"
+
+  tasks:
+    # 1) Zip locally
+    - name: Create zip archive locally
+      archive:
+        path: "{{ local_dir }}"
+        dest: "/tmp/{{ archive_name }}"
+        format: zip
+      delegate_to: localhost
+      become: false
+      run_once: true
+
+    # 2) Transfer to remote
+    - name: Copy zip to remote
+      copy:
+        src: "/tmp/{{ archive_name }}"
+        dest: "/tmp/{{ archive_name }}"
+
+    # 3) Ensure target directory exists
+    - name: Ensure target directory exists
+      file:
+        path: "{{ code_dir }}"
+        state: directory
+        mode: "0755"
+
+    # 4) Unzip on remote
+    - name: Unzip archive on remote
+      unarchive:
+        src: "/tmp/{{ archive_name }}"
+        dest: "{{ code_dir }}"
+        remote_src: yes

@@ -5,7 +5,7 @@
   tasks:
     - name: Create directory if it not exists
       ansible.builtin.file:
-        path: "{{ project_path }}"
+        path: "{{ repo_dir }}"
         state: directory
         owner: "{{ user }}"
         mode: "0755"
@@ -26,7 +26,7 @@
       ansible.builtin.git:
         repo: "{{ repo }}"
         version: "{{ git_ref }}"
-        dest: "{{ project_path }}"
+        dest: "{{ repo_dir }}"
         accept_hostkey: true
         force: true
       environment:

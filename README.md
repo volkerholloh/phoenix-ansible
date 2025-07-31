@@ -154,3 +154,28 @@ Erlang 26.2.5.1
 Elixir 1.13.1-otp-24
 
 <https://binaries2.erlang-solutions.com/ubuntu/pool/contrib/e/esl-erlang/esl-erlang_27.3.4-1~ubuntu~noble_amd64.deb>
+
+an der command line app abschießen:
+kill -s TERM $(lsof -t -i :4000 -s TCP:LISTEN)
+
+log datei anschauen:
+journalctl -u petal_pro
+
+## testing
+
+Release created at _build/prod/rel/petal_pro
+
+    # To start your system
+    _build/prod/rel/petal_pro/bin/petal_pro start
+
+Once the release is running:
+
+    # To connect to it remotely
+    _build/prod/rel/petal_pro/bin/petal_pro remote
+
+    # To stop it gracefully (you may also send SIGINT/SIGTERM)
+    _build/prod/rel/petal_pro/bin/petal_pro stop
+
+To list all commands:
+
+    _build/prod/rel/petal_pro/bin/petal_pro
