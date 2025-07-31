@@ -2,26 +2,32 @@
 user: ansible
 port: 4000
 project_name: petal_pro # Should match Phoenix project name
+local_project_name: planner
 project_pretty_name: Petal Pro
 project_url: planner.ihubserver.de
-# tailscale_hostname: fancy-server
-# tailscale_tailnet_name: tailfab2f.ts.net # https://login.tailscale.com/admin/dns
-repo_dir: "/var/home/{{ user }}/code/{{ project_name }}"
+code_dir: "/home/{{ user }}/code" # hierhin wird bei copy und unzip entpackt
+repo_dir: "/home/{{ user }}/code/{{ local_project_name }}"
+local_dir: "/Users/volker/code/{{ local_project_name }}"
 db_name: prod
 
-erlang_binary_url: "https://binaries2.erlang-solutions.com/ubuntu/pool/contrib/e/esl-erlang/esl-erlang_27.3-1~ubuntu~noble_amd64.deb"
-elixir_release_url: "https://github.com/elixir-lang/elixir/releases/download/v1.14.5/elixir-otp-25.zip"
+erlang_binary_url: https://binaries2.erlang-solutions.com/ubuntu/pool/contrib/e/esl-erlang/esl-erlang_26.2.3-1~ubuntu~jammy_amd64.deb
+
+elixir_release_url: "https://builds.hex.pm/builds/elixir/v1.14.5-otp-26.zip"
 elixir_version: "1.14.5"
-elixir_install_dir: "/opt/{{ elixir-version }}"
+elixir_install_dir: "/opt/{{ elixir_version }}"
 
 repo: "git@github.com:volkerholloh/planner.git"
 version: "{{ git_ref }}"
+vsn_next: "1.5.2"
 dest: "{{ project_path }}"
 
 git_ref: "master"
 
 projects_dir: "/home/{{ user }}/projects"
 project_path: "{{ projects_dir }}/{{ project_name }}"
+
+tailscale_hostname: fancy-server
+tailscale_tailnet_name: tailfab2f.ts.net # https://login.tailscale.com/admin/dns
 
 # Leave me alone!
 maintenance_dir: /opt/{{ project_name }}/maintenance
