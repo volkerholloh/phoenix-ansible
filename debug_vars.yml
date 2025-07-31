@@ -1,0 +1,29 @@
+- name: Print env
+  hosts: production
+  gather_facts: false
+
+  tasks:
+    - debug:
+        msg: "export DATABASE_URL={{ database_url }}"
+
+    - debug:
+        msg: "export SECRET_KEY_BASE={{ vault_secret_key_base }}"
+
+    - debug:
+        msg: "export PORT={{ port }}"
+
+    - debug:
+        msg: "export PHX_SERVER=true"
+
+    - debug:
+        msg: "export PHX_HOST={{ project_url }}"
+
+      # msg: "Ansible Version: {{ ansibleVersion.stdout }}"
+      # msg: "PHX_SERVER=true"
+      # msg: "SECRET_KEY_BASE={{ vault_secret_key_base }}"
+      # msg: "DATABASE_URL={{ database_url }}"
+      # msg: "PORT={{ port }}"
+      # msg: "PHX_HOST={{ project_url }}"
+      # msg: "RELEASE_DISTRIBUTION=name"
+      # msg: "RELEASE_NODE={{ project_name }}@{{ tailscale_hostname }}.{{ tailscale_tailnet_name }}"
+      # msg: "RELEASE_COOKIE={{ vault_release_cookie }}"
