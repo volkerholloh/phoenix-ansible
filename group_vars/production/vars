@@ -4,7 +4,7 @@ port: 4000
 project_name: petal_pro # Should match Phoenix project name
 local_project_name: planner
 project_pretty_name: Petal Pro
-project_url: planner.ihubserver.de
+project_url: planner.volkerholloh.de
 code_dir: "/home/{{ user }}/code" # hierhin wird bei copy und unzip entpackt
 repo_dir: "/home/{{ user }}/code/{{ local_project_name }}"
 local_dir: "/Users/volker/code/{{ local_project_name }}"
