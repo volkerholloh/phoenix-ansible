@@ -36,3 +36,9 @@
         src: "/tmp/{{ archive_name }}"
         dest: "{{ code_dir }}"
         remote_src: yes
+
+    # # delete _build directory
+    # - name: Remove _build directory
+    #   file:
+    #     path: "{{ code_dir }}/_build"
+    #     state: absent

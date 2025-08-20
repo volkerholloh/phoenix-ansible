@@ -12,3 +12,5 @@
       with_items:
         - zip
         - build-essential
+        - npm
+        - esbuild

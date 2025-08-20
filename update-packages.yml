@@ -9,3 +9,7 @@
         upgrade: "yes"
         update_cache: "yes"
         autoremove: "yes"
+
+    - name: Set system-wide timezone to Europe/Berlin
+      ansible.builtin.timezone:
+        name: Europe/Berlin

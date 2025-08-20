@@ -136,4 +136,5 @@
       with_items:
         - http
         - https
+        - smtp
       notify: Reload firewalld

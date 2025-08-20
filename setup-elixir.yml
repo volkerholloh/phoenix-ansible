@@ -1,4 +1,4 @@
-- name: Setup Postgres
+- name: Setup Elixir
   hosts: production
   become: true
   remote_user: "{{ user }}"
