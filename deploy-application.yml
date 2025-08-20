@@ -7,6 +7,7 @@
     caddy_config_path: "/etc/caddy/Caddyfile"
     app_service_file: "/etc/systemd/system/{{ project_name }}.service"
     app_tarball: "{{ tarballs_dir }}/{{ project_name }}-{{ vsn_next }}.tar.gz"
+    hex_petal_auth_key: "{{ vault_hex_petal_auth_key }}"
 
   tasks:
     - name: Create maintenance directory
@@ -72,6 +73,20 @@
         path: "{{ item.path }}"
         state: absent
       loop: "{{ matched_files.files }}"
+
+    # add custom repo to hex
+    - name: Add custom Hex repository
+      command: >
+        mix hex.repo add petal https://petal.build/repo \
+        --fetch-public-key SHA256:6Ff7LeQCh4464psGV3w4a8WxReEwRl+xWmgtuHdHsjs \
+        --auth-key "{{ hex_petal_auth_key }}"
+      when: hex_petal_auth_key is defined
+
+    # get dependencies
+    - name: Get dependencies
+      shell: |
+        cd {{ repo_dir }} && \
+        MIX_ENV=prod mix deps.get --only prod
 
     # run mix release
     - name: compile and deploy assets

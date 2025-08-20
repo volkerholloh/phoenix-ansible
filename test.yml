@@ -1,4 +1,4 @@
-- name: Deploy application
+- name: test
   hosts: production
   become: true
   remote_user: "{{ user }}"
@@ -7,92 +7,12 @@
     caddy_config_path: "/etc/caddy/Caddyfile"
     app_service_file: "/etc/systemd/system/{{ project_name }}.service"
     app_tarball: "{{ tarballs_dir }}/{{ project_name }}-{{ vsn_next }}.tar.gz"
+    hex_petal_auth_key: "{{ vault_hex_petal_auth_key }}"
 
   tasks:
-    - name: Create temporary app directory
-      file:
-        path: "{{ app_dir_tmp }}"
-        state: directory
-
-    - name: Extract the release to temporary app directory
-      unarchive:
-        src: "{{ repo_dir }}/_build/prod/{{ project_name }}-{{ vsn_next }}.tar.gz"
-        dest: "{{ app_dir_tmp }}"
-        remote_src: true
-
-        # war: src: "{{ app_tarball }}"
-
-    - name: Copy env file
-      template:
-        src: templates/.env.j2
-        dest: "{{ app_dir_tmp }}/.env"
-
-    - name: Give insecure permissions to latest_remote_poll.txt in repo
-      ansible.builtin.file:
-        path: "{{ repo_dir }}/_build/prod/lib/tzdata/priv/latest_remote_poll.txt"
-        mode: "1766"
-
-    # - name: create file for latest_remote_poll.txt in app_dir_tmp
-    #   ansible.builtin.file:
-    #     path: "{{ app_dir_tmp }}/_build/prod/lib/tzdata/priv/latest_remote_poll.txt"
-    #     state: touch
-
-    # - name: Give insecure permissions to to latest_remote_poll.txt in app_dir_tmp
-    #   ansible.builtin.file:
-    #     path: "{{ app_dir_tmp }}/_build/prod/lib/tzdata/priv/latest_remote_poll.txt"
-    #     mode: "1755"
-
-    - name: Wait for port to close active connections
-      wait_for:
-        host: 0.0.0.0
-        port: "{{ port }}"
-        state: drained
-
-    # Downtime starts here!
-    - name: Stop app service
-      service:
-        name: "{{ project_name }}"
-        state: stopped
-
-    - name: Remove app directory
-      file:
-        path: "{{ app_dir }}"
-        state: absent
-
-    - name: Create app directory
-      command:
-        cmd: mv {{ app_dir_tmp }} {{ app_dir }}
-      args:
-        creates: "{{ app_dir }}"
-
-    # handle tzdata permissions
-    - name: Find latest_remote_poll.txt
-      ansible.builtin.find:
-        paths: "{{ app_dir }}/lib"
-        patterns: "latest_remote_poll.txt"
-        recurse: yes
-      register: poll_files
-
-    - name: Set insecure permissions
-      ansible.builtin.file:
-        path: "{{ item.path }}"
-        mode: "1766"
-      loop: "{{ poll_files.files }}"
-
-    - name: Perform database migrations
-      shell:
-        cmd: "env $(grep -v '^#' {{ app_dir }}/.env | xargs) {{ app_dir }}/bin/migrate"
-      register: migration_result
-      changed_when: "'[info] Migrations already up' not in migration_result.stdout"
-
-    - name: Start app service
-      service:
-        name: "{{ project_name }}"
-        daemon_reload: true
-        state: started
-
-    - name: Check app is running
-      wait_for:
-        port: "{{ port }}"
-        delay: 5
-        timeout: 15
+    - name: Add custom Hex repository
+      command: >
+        mix hex.repo add petal https://petal.build/repo \
+        --fetch-public-key SHA256:6Ff7LeQCh4464psGV3w4a8WxReEwRl+xWmgtuHdHsjs \
+        --auth-key "{{ hex_petal_auth_key }}"
+      when: hex_petal_auth_key is defined
