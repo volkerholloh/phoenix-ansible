@@ -7,6 +7,24 @@
     remote_path: "{{ repo_dir }}"
 
   tasks:
+    - name: Check if _build/prod exists
+      stat:
+        path: "{{ local_dir }}/_build/prod"
+      delegate_to: localhost
+      register: prod_dir_exists
+      run_once: true
+      become: false
+
+    # rename _build/prod to _build/prod_local
+    - name: Rename _build/prod to _build/prod_local (if exists)
+      command: mv {{ local_dir }}/_build/prod {{ local_dir }}/_build/prod_local
+      args:
+        removes: "{{ local_dir }}/_build/prod"
+      when: prod_dir_exists.stat.exists
+      delegate_to: localhost
+      become: false
+      run_once: true
+
     # 1) Zip locally
     - name: Create zip archive locally
       archive:
@@ -16,6 +34,14 @@
       delegate_to: localhost
       become: false
       run_once: true
+
+    # change it back _build/prod_local to _build/prod
+    - name: Rename _build/prod_local to _build/prod
+      command: mv {{ local_dir }}/_build/prod_local {{ local_dir }}/_build/prod
+      delegate_to: localhost
+      become: false
+      run_once: true
+      when: prod_dir_exists.stat.exists
 
     # 2) Transfer to remote
     - name: Copy zip to remote

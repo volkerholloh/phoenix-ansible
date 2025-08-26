@@ -10,9 +10,7 @@
     hex_petal_auth_key: "{{ vault_hex_petal_auth_key }}"
 
   tasks:
-    - name: Add custom Hex repository
-      command: >
-        mix hex.repo add petal https://petal.build/repo \
-        --fetch-public-key SHA256:6Ff7LeQCh4464psGV3w4a8WxReEwRl+xWmgtuHdHsjs \
-        --auth-key "{{ hex_petal_auth_key }}"
-      when: hex_petal_auth_key is defined
+    - name: Copy env file
+      template:
+        src: templates/.env.j2
+        dest: "{{ app_dir }}/.env"
